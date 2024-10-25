@@ -260,9 +260,3 @@ pred_mask = (pred_mask > 0.5)*1.0 #putting a threshold , above whovh is consider
 helper.show_image(image, mask, pred_mask.detach().cpu().squeeze(0)) #original mask, pred mask in bchw,,,to remove batch b used unsqueeze
 #shows color people image, bnw ground truth image which is mask, model op which is pred mask. last two similar
 
-"""# For updates about upcoming and current guided projects follow me on...
-
-Twitter : @parth_AI
-
-Linkedin : www.linkedin.com/in/pdhameliya
-"""
