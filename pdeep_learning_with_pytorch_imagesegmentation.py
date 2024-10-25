@@ -39,21 +39,21 @@ EPOCHS = 25
 LR = 0.003
 IMG_SIZE = 320 #H AND W
 BATCH_SIZE = 16
-ENCODER = 'timm-efficientnet-b0'
-WEIGHTS = 'imagenet' #contains millions of images of thsnds of classs
+ENCODER = 'timm-efficientnet-b0' #enc transform raw data into a lower-dimensional, more informative representation that can be easily processed by other parts of a model
+WEIGHTS = 'imagenet' #contains millions of images of thsnds of classs, pre-trained weights of a neural network that has been trained on the ImageNet dataset
 
 #PLOT IMAGES
 df = pd.read_csv(CSV_FILE) #panda comma separated value
-df.head() #gives first few egs
+df.head() #gives first few egs, will get img n mask PATHS
 
-row = df.iloc[7] #pandas dataframe of 4th row eg.
-image_path = row.images
+row = df.iloc[7] #pandas dataframe of 7th row eg.
+image_path = row.images #takes path frm above op of coloumn named imags
 mask_path = row.masks
 #to read image use cv2
 image = cv2.imread(image_path) #to load image
-image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB) #cv in BGR
+image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB) #opencv reads in BGR
 #to read mask
-mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE) / 255.0
+mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE) / 255.0  #we want it in grey scale n normalised
 
 f, (ax1, ax2) = plt.subplots(1, 2, figsize=(10,5))
 
@@ -82,7 +82,7 @@ def get_train_augs():
       A.VerticalFlip(p = 0.5)
 
   ])
-def get_valid_augs():
+def get_valid_augs():  #in valid set no augmntn is done
   return A.Compose([
       A.Resize(IMG_SIZE, IMG_SIZE),
 #used in inference so only resize
@@ -91,7 +91,7 @@ def get_valid_augs():
 
 """# Task 4 : Create Custom Dataset"""
 
-#done to get image mask pair acc to index as done above actually
+#done to get image mask pair acc to index as done above actually, here using class method
 from torch.utils.data import Dataset
 
 class SegmentationDataset(Dataset):
@@ -110,21 +110,21 @@ class SegmentationDataset(Dataset):
     mask_path = row.masks
 
     image = cv2.imread(image_path)
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB) #hwc
 
     mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE) #in hw
     mask = np.expand_dims(mask, axis = -1) #now hwc, added one more dim
 
-    if self.augmentations:
+    if self.augmentations: #if augmnts r true, gonna apply aug on data n mask
       data = self.augmentations(image = image, mask = mask) #returns dict image, mask as key, vvalue
-      image = data['image']
+      image = data['image'] #hwc==0,1,2 to 201 or chw in transpose below
       mask = data['mask']
 
       #we want hwc to pyto((rch formula chw
-    image = np.transpose(image, (2,0,1)).astype(np.float32)
-    mask = np.transpose(mask, (2,0,1)).astype(np.float32)
+    image = np.transpose(image, (2,0,1)).astype(np.float32) #chw
+    mask = np.transpose(mask, (2,0,1)).astype(np.float32) #chw
 
-      #to convert numpy to tensor
+      #to convert this numpy to tensor and scale it
     image = torch.Tensor(image) / 255.0 #to normalise get renge 0 t0 1
     mask = torch.round(torch.Tensor(mask) / 255.0) #also rounding up values for mask
     return image, mask
@@ -207,8 +207,8 @@ def train_fn(data_loader, model, optimizer):
 
     optimizer.zero.grad()
     logits, loss = model(images, mask) #L,L WILL B RETRND WEN I,M IP
-    loss.backward() #TO FIND GRADIENTS
-    optimizer.step() #to update weights
+    loss.backward() #TO FIND GRADIENTS,#got loss , find gradients
+    optimizer.step() #to update weights n biases parametrs of d model
     total_loss += loss.item()
   return total_loss / len(data_loader) #avg loss retrnd = tloss/ no. of batches
 
