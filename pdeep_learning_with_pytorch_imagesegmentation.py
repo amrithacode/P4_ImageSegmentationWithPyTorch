@@ -236,7 +236,7 @@ for i in range(EPOCHS):
   valid_loss = eval_fn(validloader, model)
 
   if valid_loss < best_valid_loss:
-    torch.save(model.state_dict(), 'best_model.pt') #in left folder
+    torch.save(model.state_dict(), 'best_model.pt') #in left folder #named it as best model, will b used in infrnce
     print("SAVED MODEL")
     best_valid_loss = valid_loss
 
@@ -255,9 +255,9 @@ logits_mask = model(image.to(DEVICE).unsqueeze(0))
 #unsqueeze at xis 0 adding 1 batch dimensn to 1, c,h,w
 #above logits given sigmoid:
 pred_mask = torch.sigmoid(logits_mask)
-pred_mask = (pred_mask > 0.5)*1.0
+pred_mask = (pred_mask > 0.5)*1.0 #putting a threshold , above whovh is considered as one
 
-helper.show_image(image, mask, pred_mask.detach().cpu().squeeze(0))
+helper.show_image(image, mask, pred_mask.detach().cpu().squeeze(0)) #original mask, pred mask in bchw,,,to remove batch b used unsqueeze
 #shows color people image, bnw ground truth image which is mask, model op which is pred mask. last two similar
 
 """# For updates about upcoming and current guided projects follow me on...
