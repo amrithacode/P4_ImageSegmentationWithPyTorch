@@ -109,7 +109,7 @@ class SegmentationDataset(Dataset):
 
     image_path = row.images
     image2 = cv2.imread(image_path)
-    image2 = cv2.cvtColor(image, cv2.COLOR_BGR2RGB) #hwc
+    image2 = cv2.cvtColor(image2, cv2.COLOR_BGR2RGB) #hwc
 
     mask_path = row.masks
     mask2 = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE) #in hw
