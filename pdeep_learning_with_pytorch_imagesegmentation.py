@@ -198,7 +198,7 @@ model = SegmentationModel()
 """# Task 7 : Create Train and Validation Function"""
 
 def train_fn(data_loader, model, optimizer):
-  model.train()
+  model.train() #indicates dropout layer is on, model should b in training mode
   total_loss = 0.0
 
   for images, mask in tqdm(data_loader): #tqdm to trach batchs
@@ -206,10 +206,10 @@ def train_fn(data_loader, model, optimizer):
     mask = mask.to(DEVICE)
 
     optimizer.zero.grad()
-    logits, loss = model(images, mask) #L,L WILL B RETRND WEN I,M IP
+    logits, loss = model(images, mask) #L,L WILL B RETRND WEN I,M IP mask is gtruth, logits is pred truth
     loss.backward() #TO FIND GRADIENTS,#got loss , find gradients
     optimizer.step() #to update weights n biases parametrs of d model
-    total_loss += loss.item()
+    total_loss += loss.item() #every batch loss will b here
   return total_loss / len(data_loader) #avg loss retrnd = tloss/ no. of batches
 
 def eval_fn(data_loader, model):
@@ -237,21 +237,20 @@ for i in range(EPOCHS):
 
   if valid_loss < best_valid_loss:
     torch.save(model.state_dict(), 'best_model.pt') #in left folder #named it as best model, will b used in infrnce
-    print("SAVED MODEL")
+    print("SAVED MODEL") #weights are saved
     best_valid_loss = valid_loss
 
     print(f"Epoch : {i+1} Train Loss : {train_loss} Valid Loss : {valid_loss}")
-
+#op first progrssn bar is train fn, second is eval fn
 
 
 """# Task 9 : Inference"""
-
+#to compare acual mask with predicted  mask
 #above got best model at epoch = 19, using that here
 idx = 20
-model.load_state_dict(torch.load('/content/best_model.pt')) #to load model
-image, mask = validset[idx]
-logits_mask = model(image.to(DEVICE).unsqueeze(0))
-#image tensor from train/valid has shape chw
+model.load_state_dict(torch.load('/content/best_model.pt')) #to load best weights
+image, mask = validset[idx] #here img in chw #image tensor from train/valid has shape chw
+logits_mask = model(image.to(DEVICE).unsqueeze(0)) #here img tensor must batchsize,chw 
 #unsqueeze at xis 0 adding 1 batch dimensn to 1, c,h,w
 #above logits given sigmoid:
 pred_mask = torch.sigmoid(logits_mask)
